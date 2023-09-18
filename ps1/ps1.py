@@ -2,6 +2,7 @@ from asyncio import base_tasks
 import math
 import time
 import random
+from typing import List, TypedDict, Dict, Tuple
 
 """
 See below for mergeSort and countSort functions, and for a useful helper function.
@@ -39,16 +40,18 @@ def merge(arr1, arr2):
 
     return sortedArr
 
+
 def mergeSort(arr):
     if len(arr) < 2:
         return arr
 
-    midpt = int(math.ceil(len(arr)/2))
+    midpt = int(math.ceil(len(arr) / 2))
 
     half1 = mergeSort(arr[0:midpt])
     half2 = mergeSort(arr[midpt:])
 
     return merge(half1, half2)
+
 
 def countSort(univsize, arr):
     universe = []
@@ -65,7 +68,8 @@ def countSort(univsize, arr):
 
     return sortedArr
 
-def BC(n, b, k):
+
+def BC(n, b, k) -> List[int]:
     if b < 2:
         raise ValueError()
     digits = []
@@ -76,6 +80,57 @@ def BC(n, b, k):
         raise ValueError()
     return digits
 
-def radixSort(univsize, base, arr):
-    """TODO: Implement Radix Sort using BC and countSort"""
-    return [] 
+
+class InputSortable(TypedDict):
+    k: int
+    v: int
+
+
+RadixSortable = Tuple[int, InputSortable]
+
+# maxSizeKey??
+
+
+def radixSort(
+    univsize: int, base: int, arr: List[InputSortable]
+) -> List[InputSortable]:
+    numDigits: int = math.ceil(math.log(univsize) / math.log(base))
+    reversedKeys: Dict[int, List[int]] = {}
+    for ind in range(0, len(arr)):
+        keyI: int = arr[ind]["k"]
+        reversedKeys[keyI] = BC(keyI, base, numDigits)
+    for digit in range(0, numDigits):
+        radixSortables: List[RadixSortable] = []
+        for ind in range(0, len(arr)):
+            input: InputSortable = arr[ind]
+            rdKey: int = reversedKeys[input["k"]][digit]
+            rdEntry: RadixSortable = (rdKey, input)
+            radixSortables.append(rdEntry)
+        assert len(radixSortables) == len(arr)
+        radixSorted: List[RadixSortable] = countSort(univsize, radixSortables)
+        for ind in range(0, len(arr)):
+            arr[ind] = radixSorted[ind][1]
+    return arr
+
+
+def genTestArr(ct: int, maxNum: int) -> List[InputSortable]:
+    res: List[InputSortable] = []
+    for _ in range(0, ct):
+        res.append({"k": int(random.random() * maxNum), "v": "T"})
+    return res
+
+
+def runTest(ct: int) -> List[InputSortable]:
+    univSize = 1000
+    base = 2
+    arr: List[InputSortable] = genTestArr(ct, univSize)
+    out = radixSort(univSize, base, arr)
+    prev: int = -math.inf
+    for entry in out:
+        assert prev <= entry["k"]
+        prev = entry["k"]
+    return arr
+
+
+# res = runTest(10)
+# print(res)
