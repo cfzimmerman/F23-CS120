@@ -17,7 +17,7 @@ fastest algorithm with an associated color.
 """
 
 # sets the number of trials to run when timing each algorithm (feel free to change this!)
-N = 8
+N = 2
 
 # generates set of (n, U) combinations within the given constraints
 n_U_set = list(
@@ -94,7 +94,8 @@ def plot_graph():
     labels = ["Merge Sort", "Count Sort", "Radix Sort"]
 
     legend_handles = [
-        plt.Line2D([0], [0], marker="o", color=color, label=label, markersize=10)
+        plt.Line2D([0], [0], marker="o", color=color,
+                   label=label, markersize=10)
         for color, label in zip(legend_colors, labels)
     ]
 
@@ -108,7 +109,8 @@ def plot_graph():
 
     plt.title("Sorting runtime analysis")
 
-    plt.legend(handles=legend_handles, loc="best", bbox_to_anchor=(0.5, 0.0, 0.5, 0.5))
+    plt.legend(handles=legend_handles, loc="best",
+               bbox_to_anchor=(0.5, 0.0, 0.5, 0.5))
 
     plt.savefig("scatter_plot.png")
 

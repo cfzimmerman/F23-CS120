@@ -137,11 +137,12 @@ def radixSort(
 ) -> List[InputSortable]:
     numDigits: int = math.ceil(math.log(univsize) / math.log(base))
     inputLen = len(arr)
-    radixSortables: List[RadixSortable] = [(0, "")] * inputLen
+    radixSortables: List[RadixSortable] = [(0, None)] * inputLen
     for digit in range(0, numDigits):
         for ind in range(0, inputLen):
-            radixSortables[ind] = (BC(arr[ind][0], base, numDigits)[digit], arr[ind])
-        for ind, entry in enumerate(countSort(univsize, radixSortables)):
+            radixSortables[ind] = (
+                BC(arr[ind][0], base, numDigits)[digit], arr[ind])
+        for ind, entry in enumerate(countSort(base, radixSortables)):
             arr[ind] = entry[1]
     return arr
 
@@ -173,7 +174,7 @@ def clock(ct: int) -> int:
     return (time.time() - start) / numTests
 
 
-# res = runTest(10)
+# res = runTest(1000)
 # print(res)
 
 # print(clock(50_000))
