@@ -27,13 +27,13 @@ class BinarySearchTree:
             debugger.inc_size_counter()
         self._size = a
 
-    ####### Part a #######
-    """
-    Calculates the size of the tree
-    returns the size at a given node
-    """
+    # Part a
 
     def calculate_sizes(self, debugger=None):
+        """
+        Calculates the size of the tree
+        returns the size at a given node
+        """
         # Debugging code
         # No need to modify
         # Provides counts
@@ -68,12 +68,11 @@ class BinarySearchTree:
         # ^ Fix here, explained in PDF
         return None
 
-    """
-    Searches for a given key
-    returns a pointer to the object with target key or None (Roughgarden)
-    """
-
-    def search(self, key):
+    def search(self, key: int) -> Self | None:
+        """
+        Searches for a given key
+        returns a pointer to the object with target key or None (Roughgarden)
+        """
         if self is None:
             return None
         elif self.key == key:
@@ -84,54 +83,112 @@ class BinarySearchTree:
             return self.left.search(key)
         return None
 
-    """
-    Inserts a key into the tree
-    key: the key for the new node; 
-        ... this is NOT a BinarySearchTree/Node, the function creates one
-    
-    returns the original (top level) tree - allows for easy chaining in tests
-    """
+    def insert(self, key: int) -> Self | None:
+        """
+        Inserts a key into the tree
+        key: the key for the new node;
+            ... this is NOT a BinarySearchTree/Node, the function creates one
 
-    def insert(self, key):
+        returns the original (top level) tree - allows for easy chaining in
+        tests
+        """
         if self.key is None:
             self.key = key
         elif self.key > key:
             if self.left is None:
                 self.left = BinarySearchTree(self.debugger)
             self.left.insert(key)
+            self.size += 1
+            # ^ added
         elif self.key < key:
             if self.right is None:
                 self.right = BinarySearchTree(self.debugger)
             self.right.insert(key)
-        self.calculate_sizes()
+            self.size += 1
+            # ^ added
+        # self.calculate_sizes()
+        # ^ removed
         return self
 
-    ####### Part b #######
+    # Part b
 
-    """
-    Performs a `direction`-rotate the `side`-child of (the root of) T (self)
-    direction: "L" or "R" to indicate the rotation direction
-    child_side: "L" or "R" which child of T to perform the rotate on
-    Returns: the root of the tree/subtree
-    Example:
-    Original Graph
-      10
-       \
-        11
-          \
-           12
-    
-    Execute: NodeFor10.rotate("L", "R") -> Outputs: NodeFor10
-    Output Graph
-      10
-        \
-        12
-        /
-       11 
-    """
+    def __recalc_size(self) -> int:
+        """returns the size of a subtree rooted at self as derived from the
+        sizes of the children of the root node"""
+        sum = 0
+        if self.left:
+            sum += self.left.size
+        if self.right:
+            sum += self.right.size
+        return sum
+
+    def __rotate_left(self) -> Self:
+        """Performs leftward tree rotation. Assumes a right node exists. That
+        right node will be returned as the new subtree root."""
+        prev_n_right = self.right
+        assert prev_n_right is not None
+
+        # redirect pointers
+        self.right = self.right.left
+        prev_n_right.left = self
+
+        # recalculate sizes
+        self.size = self.__recalc_size()
+        prev_n_right.size = prev_n_right.__recalc_size()
+
+        return prev_n_right
+
+    def __rotate_right(self) -> Self:
+        """Performs rightward tree rotation. Assumes a left node exists. That
+        left node will be returned as the new subtree root."""
+        prev_n_left = self.left
+        assert prev_n_left is not None
+
+        # redirect pointers
+        self.left = self.left.right
+        prev_n_left.right = self
+
+        # recalculate sizes
+        self.size = self.__recalc_size()
+        prev_n_left.size = prev_n_left.__recalc_size()
+
+        return prev_n_left
 
     def rotate(self, direction, child_side):
-        # Your code goes here
+        """
+        Performs a `direction`-rotate the `side`-child of (the root of) T (self)
+        direction: "L" or "R" to indicate the rotation direction
+        child_side: "L" or "R" which child of T to perform the rotate on
+        Returns: the root of the tree/subtree
+        Example:
+        Original Graph
+          10
+           \
+            11
+              \
+               12
+
+        Execute: NodeFor10.rotate("L", "R") -> Outputs: NodeFor10
+        Output Graph
+          10
+            \
+            12
+            /
+           11
+        """
+        assert child_side == "L" or child_side == "R"
+        assert direction == "L" or direction == "R"
+
+        if child_side == "L":
+            if direction == "L":
+                self.left = self.left.__rotate_left()
+            else:
+                self.left = self.left.__rotate_right()
+        else:
+            if direction == "L":
+                self.right = self.right.__rotate_left()
+            else:
+                self.right = self.right.__rotate_right()
         return self
 
     def print_bst(self):
