@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections import deque
 
 
 class BinarySearchTree:
@@ -189,12 +190,29 @@ class BinarySearchTree:
                 self.right = self.right.__rotate_left()
             else:
                 self.right = self.right.__rotate_right()
+        if self.size != self.calculate_sizes():
+            self.print_bst_bfs()
         return self
+
+    def print_bst_bfs(self):
+        pending = deque()
+        pending.appendleft(self)
+        while len(pending) > 0:
+            layerLen = len(pending)
+            row = []
+            for _ in range(0, layerLen):
+                next = pending.pop()
+                row.append(f"{next.key}: {next.size}")
+                if next.left:
+                    pending.appendleft(next.left)
+                if next.right:
+                    pending.appendleft(next.right)
+            print(row)
 
     def print_bst(self):
         if self.left is not None:
             self.left.print_bst()
-        print(self.key),
+        print(f"{self.key}: {self.size}"),
         if self.right is not None:
             self.right.print_bst()
         return self
