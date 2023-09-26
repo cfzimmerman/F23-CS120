@@ -1,4 +1,4 @@
-from typing import Self
+from __future__ import annotations
 
 
 class BinarySearchTree:
@@ -50,7 +50,7 @@ class BinarySearchTree:
             self.size += self.left.calculate_sizes(debugger)
         return self.size
 
-    def select(self, ind: int) -> Self | None:
+    def select(self, ind: int) -> BinarySearchTree | None:
         """
         Select the ind-th key in the tree
         ind: a number between 0 and n-1 (the number of nodes/objects)
@@ -68,7 +68,7 @@ class BinarySearchTree:
         # ^ Fix here, explained in PDF
         return None
 
-    def search(self, key: int) -> Self | None:
+    def search(self, key: int) -> BinarySearchTree | None:
         """
         Searches for a given key
         returns a pointer to the object with target key or None (Roughgarden)
@@ -83,7 +83,7 @@ class BinarySearchTree:
             return self.left.search(key)
         return None
 
-    def insert(self, key: int) -> Self | None:
+    def insert(self, key: int) -> BinarySearchTree | None:
         """
         Inserts a key into the tree
         key: the key for the new node;
@@ -122,7 +122,7 @@ class BinarySearchTree:
             sum += self.right.size
         return sum
 
-    def __rotate_left(self) -> Self:
+    def __rotate_left(self) -> BinarySearchTree:
         """Performs leftward tree rotation. Assumes a right node exists. That
         right node will be returned as the new subtree root."""
         prev_n_right = self.right
@@ -138,7 +138,7 @@ class BinarySearchTree:
 
         return prev_n_right
 
-    def __rotate_right(self) -> Self:
+    def __rotate_right(self) -> BinarySearchTree:
         """Performs rightward tree rotation. Assumes a left node exists. That
         left node will be returned as the new subtree root."""
         prev_n_left = self.left
