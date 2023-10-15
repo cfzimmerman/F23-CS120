@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import time
 import math
 import random
+from typing import List, Tuple
 
 random.seed(120)
 
@@ -20,26 +21,64 @@ random.seed(120)
 ####################
 
 
-'''
+"""
 A Las Vegas Algorithm to find a key-value pair (Ij, Kj) such that Kj is an i’th smallest key.
 arr: a list of key-value pair tuples
     e.g. [(K0, V0), (K1, V1), ..., (Ki, Vi), ..., (Kn, Vn)] 
     ... in this problem set, the values are irrelevant
 i: an integer [0, n-1] 
 returns: An key-value pair (Kj, Vj) such that Kj is an i’th smallest key.
-'''
+"""
+
+KVArr = List[Tuple[int, int]]
 
 
-def QuickSelect(arr, i):
-    # Your code here
-
-    # Feel free to use get_random_index(arr) or get_random_int(start_inclusive, end_inclusive)
-    # ... see the helper functions below
-    pass
-    return (0, -1)
+def swap(arr: KVArr, ind1: int, ind2: int):
+    temp = arr[ind1]
+    arr[ind1] = arr[ind2]
+    arr[ind2] = temp
 
 
-'''
+def get_partition(arr: KVArr, left: int, right: int) -> int:
+    # put the pivot value at the end of the window
+    swap(arr, get_random_int(left, right), right)
+    pivot_ind = right
+    pivot_val = arr[pivot_ind][0]
+    right -= 1
+
+    while left <= right:
+        while left <= right and pivot_val < arr[right][0]:
+            right -= 1
+        while left <= right and arr[left][0] <= pivot_val:
+            left += 1
+        if left <= right:
+            swap(arr, left, right)
+            left += 1
+            right -= 1
+
+    swap(arr, left, pivot_ind)
+    # the value at 'left' should always be in its correct place by
+    # the end of partition
+    return left
+
+
+def run_qs(arr: KVArr, target_ind: int, left: int, right: int) -> Tuple[int, int]:
+    if left == right:
+        return arr[left]
+    assert left < right
+    pivot_ind = get_partition(arr, left, right)
+    if target_ind < pivot_ind:
+        return run_qs(arr, target_ind, left, pivot_ind - 1)
+    if pivot_ind < target_ind:
+        return run_qs(arr, target_ind, pivot_ind + 1, right)
+    return arr[pivot_ind]
+
+
+def QuickSelect(arr: KVArr, k: int) -> Tuple[int, int]:
+    return run_qs(arr, k, 0, len(arr) - 1)
+
+
+"""
 Uses MergeSort to resolve a number of queries where each query is to find an key-value pair (Kj, Vj) such that Kj is an i’th smallest key.
 arr: a list of key-value pair tuples
     e.g. [(K0, V0), (K1, V1), ..., (Ki, Vi), ..., (Kn, Vn)] 
@@ -48,14 +87,15 @@ query_list (aka i_arr): a list of integers [0, n-1]
 returns: An list of key-value pairs such that for each query qi, the i'th element in the returned list is (Kj, Vj) such that Kj is an i’th smallest key.
 NOTE: This is different from the QuickSelect definition. This function takes in a set of queries and returns a list corresponding to their results. 
     ... this is to properly benchmark for the experiments. We only want to run MergeSort once and then use that one result to resolve all queries.
-'''
+"""
 
 
-def MergeSortSelect(arr, query_list):
-    # Only call MergeSort once
-    # ... MergeSort has already been implemented for you (see below)
-    pass
-    return [(0, -1)] * len(query_list)  # replace this line with your return
+def MergeSortSelect(arr: KVArr, query_list: List[int]) -> KVArr:
+    res: KVArr = [None for _ in range(len(query_list))]
+    sorted = MergeSort(arr)
+    for arrInd, queryInd in enumerate(query_list):
+        res[arrInd] = sorted[queryInd]
+    return res
 
 
 ##################################
@@ -73,7 +113,7 @@ def experiments():
 
     RUNS = 20  # Number of runs for each trial; more runs means better distributions approximation but longer experiment
     HEIGHT = 1.5  # Height of a chart
-    WIDTH = 3   # Width of a chart
+    WIDTH = 3  # Width of a chart
     # Determines if subcharts share the same axis scale/limits
     # ... since the trails cover a wide range, sharing the same scale/limits can cause some lines to be too small.
     SAME_AXIS_SCALE = False
@@ -83,9 +123,11 @@ def experiments():
 
     # The search space for our parameters
     # DO NOT EDIT these parameters for your final figure
-    n = [2 ** i for i in range(10, 16)]
+    n = [2**i for i in range(10, 16)]
     # Our deterministically generated dataset
-    fixed_dataset = sorted([(0, K) for K in range(max(n))], key=lambda T: T[1], reverse=True)
+    fixed_dataset = sorted(
+        [(0, K) for K in range(max(n))], key=lambda T: T[1], reverse=True
+    )
 
     # Records we will use to create the Pandas DataFrame
     n_record = []
@@ -110,7 +152,8 @@ def experiments():
                 # Record this trial run
                 n_record.append(ni)
                 k_record.append(ki)
-                ms_record.append(seconds * 1000)  # Convert seconds to milliseconds
+                # Convert seconds to milliseconds
+                ms_record.append(seconds * 1000)
                 algorithm_record.append("QuickSelect")
 
             # MergeSort Runs
@@ -123,7 +166,8 @@ def experiments():
                 # Record this trial run
                 n_record.append(ni)
                 k_record.append(ki)
-                ms_record.append(seconds * 1000)  # Convert seconds to milliseconds
+                # Convert seconds to milliseconds
+                ms_record.append(seconds * 1000)
                 algorithm_record.append("MergeSort")
 
             # Print progress
@@ -132,12 +176,14 @@ def experiments():
 
     # Create Pandas DataFrame
     data_field_title = "Runtime for {} Runs (ms)".format(RUNS)
-    df = pd.DataFrame({
-        "N": n_record,
-        "K": k_record,
-        data_field_title: ms_record,
-        "Algorithm": algorithm_record
-    })
+    df = pd.DataFrame(
+        {
+            "N": n_record,
+            "K": k_record,
+            data_field_title: ms_record,
+            "Algorithm": algorithm_record,
+        }
+    )
     plot(df, HEIGHT, WIDTH, SAME_AXIS_SCALE, data_field_title)
 
 
@@ -146,8 +192,16 @@ def plot(df, height, width, SAME_AXIS_SCALE, data_field_title):
     # ... Establish Rows by N
     # ... Establish Columns by K
     # ... Establish Lines by Algorithm
-    g = sns.FacetGrid(df, row="N", col="K", hue="Algorithm", height=height, aspect=width / height,
-                      sharex=SAME_AXIS_SCALE, sharey=SAME_AXIS_SCALE)
+    g = sns.FacetGrid(
+        df,
+        row="N",
+        col="K",
+        hue="Algorithm",
+        height=height,
+        aspect=width / height,
+        sharex=SAME_AXIS_SCALE,
+        sharey=SAME_AXIS_SCALE,
+    )
     # Plot the runtime value
     g.map(sns.kdeplot, data_field_title)
     g.add_legend()
@@ -160,11 +214,13 @@ def plot(df, height, width, SAME_AXIS_SCALE, data_field_title):
 #                  #
 ####################
 
+
 def run():
     experiments()
 
 
 # Feel free to use these function or code your own (as long as it is random)
+
 
 # A small helper function to return a random integer
 def get_random_int(start_inclusive, end_inclusive):
@@ -189,6 +245,7 @@ def get_random_index(arr):
 # You Do NOT Need to Modify Anything Below This Line
 #
 
+
 def merge(arr1, arr2):
     sortedArr = []
 
@@ -211,12 +268,12 @@ def merge(arr1, arr2):
     return sortedArr
 
 
-'''
+"""
 A deterministic sorting algorithm
 arr: a list of Key-Value pair tuples
     e.g. [(K0, V0), (K1, V1), ..., (Ki, Vi), ..., (Kn, Vn)] 
 returns: a sorted list, sorted according to keys
-'''
+"""
 
 
 def MergeSort(arr):
