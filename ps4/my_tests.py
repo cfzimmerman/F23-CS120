@@ -15,6 +15,7 @@ def get_rand_inputs(ct: int) -> List[KV]:
 
 def test_qs(ct: int, k: int) -> KV:
     arr = get_rand_inputs(ct)
+    print(len(arr))
     output = QuickSelect(arr, k)
     arr.sort()
     assert output[0] == arr[k][0]
@@ -22,5 +23,5 @@ def test_qs(ct: int, k: int) -> KV:
 
 
 n = 100_000
-for _ in range(0, 10):
-    print(test_qs(n, n // 2))
+for _ in range(0, 1):
+    print(test_qs(n, n // 3))

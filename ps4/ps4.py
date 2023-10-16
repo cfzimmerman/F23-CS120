@@ -6,6 +6,7 @@ import time
 import math
 import random
 from typing import List, Tuple
+from copy import deepcopy
 
 random.seed(120)
 
@@ -33,6 +34,7 @@ returns: An key-value pair (Kj, Vj) such that Kj is an i’th smallest key.
 KVArr = List[Tuple[int, int]]
 
 
+"""
 def swap(arr: KVArr, ind1: int, ind2: int):
     temp = arr[ind1]
     arr[ind1] = arr[ind2]
@@ -41,7 +43,8 @@ def swap(arr: KVArr, ind1: int, ind2: int):
 
 def get_partition(arr: KVArr, left: int, right: int) -> int:
     # put the pivot value at the end of the window
-    swap(arr, get_random_int(left, right), right)
+    rand_ind = get_random_int(left, right)
+    swap(arr, rand_ind, right)
     pivot_ind = right
     pivot_val = arr[pivot_ind][0]
     right -= 1
@@ -65,6 +68,7 @@ def get_partition(arr: KVArr, left: int, right: int) -> int:
 def QuickSelect(arr: KVArr, target_ind: int) -> Tuple[int, int]:
     left: int = 0
     right: int = len(arr) - 1
+    print(arr)
 
     while left < right:
         pivot_ind = get_partition(arr, left, right)
@@ -77,6 +81,29 @@ def QuickSelect(arr: KVArr, target_ind: int) -> Tuple[int, int]:
         return arr[pivot_ind]
 
     return arr[left]
+"""
+
+
+def QuickSelect(arr: KVArr, target_ind: int) -> Tuple[int, int]:
+    if len(arr) == 1:
+        return arr[0]
+    pivot_ind = get_random_index(arr)
+    pivot = arr[pivot_ind][0]
+    less = []
+    equal = []
+    greater = []
+    for el in arr:
+        if el[0] < pivot:
+            less.append(el)
+        elif el[0] > pivot:
+            greater.append(el)
+        else:
+            equal.append(el)
+    if target_ind < len(less):
+        return QuickSelect(less, target_ind)
+    if target_ind >= len(less) + len(equal):
+        return QuickSelect(greater, target_ind - len(less) - len(equal))
+    return equal[0]
 
 
 """
