@@ -62,20 +62,21 @@ def get_partition(arr: KVArr, left: int, right: int) -> int:
     return left
 
 
-def run_qs(arr: KVArr, target_ind: int, left: int, right: int) -> Tuple[int, int]:
-    if left == right:
-        return arr[left]
-    assert left < right
-    pivot_ind = get_partition(arr, left, right)
-    if target_ind < pivot_ind:
-        return run_qs(arr, target_ind, left, pivot_ind - 1)
-    if pivot_ind < target_ind:
-        return run_qs(arr, target_ind, pivot_ind + 1, right)
-    return arr[pivot_ind]
+def QuickSelect(arr: KVArr, target_ind: int) -> Tuple[int, int]:
+    left: int = 0
+    right: int = len(arr) - 1
 
+    while left < right:
+        pivot_ind = get_partition(arr, left, right)
+        if target_ind < pivot_ind:
+            right = pivot_ind - 1
+            continue
+        if pivot_ind < target_ind:
+            left = pivot_ind + 1
+            continue
+        return arr[pivot_ind]
 
-def QuickSelect(arr: KVArr, k: int) -> Tuple[int, int]:
-    return run_qs(arr, k, 0, len(arr) - 1)
+    return arr[left]
 
 
 """
@@ -107,7 +108,7 @@ def MergeSortSelect(arr: KVArr, query_list: List[int]) -> KVArr:
 
 def experiments():
     # Edit this parameter
-    k = [1, 1, 1, 1, 1]
+    k = [1, 4, 16, 32, 64]
 
     # Feel free to edit these initial parameters
 
