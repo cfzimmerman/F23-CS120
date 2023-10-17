@@ -23,5 +23,5 @@ def test_qs(ct: int, k: int) -> KV:
 
 
 n = 100_000
-for _ in range(0, 1):
+for _ in range(0, 10):
     print(test_qs(n, n // 3))

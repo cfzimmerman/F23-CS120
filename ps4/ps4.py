@@ -25,16 +25,16 @@ random.seed(120)
 """
 A Las Vegas Algorithm to find a key-value pair (Ij, Kj) such that Kj is an i’th smallest key.
 arr: a list of key-value pair tuples
-    e.g. [(K0, V0), (K1, V1), ..., (Ki, Vi), ..., (Kn, Vn)] 
+    e.g. [(K0, V0), (K1, V1), ..., (Ki, Vi), ..., (Kn, Vn)]
     ... in this problem set, the values are irrelevant
-i: an integer [0, n-1] 
+i: an integer [0, n-1]
 returns: An key-value pair (Kj, Vj) such that Kj is an i’th smallest key.
 """
 
 KVArr = List[Tuple[int, int]]
 
-
 """
+
 def swap(arr: KVArr, ind1: int, ind2: int):
     temp = arr[ind1]
     arr[ind1] = arr[ind2]
@@ -42,17 +42,23 @@ def swap(arr: KVArr, ind1: int, ind2: int):
 
 
 def get_partition(arr: KVArr, left: int, right: int) -> int:
+    init_left = left
+    init_right = right
     # put the pivot value at the end of the window
     rand_ind = get_random_int(left, right)
     swap(arr, rand_ind, right)
     pivot_ind = right
     pivot_val = arr[pivot_ind][0]
     right -= 1
+    all_identical = True
 
     while left <= right:
         while left <= right and pivot_val < arr[right][0]:
+            all_identical = False
             right -= 1
         while left <= right and arr[left][0] <= pivot_val:
+            if arr[left][0] != pivot_val:
+                all_identical = False
             left += 1
         if left <= right:
             swap(arr, left, right)
@@ -62,13 +68,14 @@ def get_partition(arr: KVArr, left: int, right: int) -> int:
     swap(arr, left, pivot_ind)
     # the value at 'left' should always be in its correct place by
     # the end of partition
+    if all_identical:
+        return (init_left + init_right) // 2
     return left
 
 
 def QuickSelect(arr: KVArr, target_ind: int) -> Tuple[int, int]:
     left: int = 0
     right: int = len(arr) - 1
-    print(arr)
 
     while left < right:
         pivot_ind = get_partition(arr, left, right)
@@ -81,6 +88,7 @@ def QuickSelect(arr: KVArr, target_ind: int) -> Tuple[int, int]:
         return arr[pivot_ind]
 
     return arr[left]
+
 """
 
 
@@ -107,13 +115,13 @@ def QuickSelect(arr: KVArr, target_ind: int) -> Tuple[int, int]:
 
 
 """
-Uses MergeSort to resolve a number of queries where each query is to find an key-value pair (Kj, Vj) such that Kj is an i’th smallest key.
+Uses MergeSort to resolve a number of queries where each query is to find an key-value pair(Kj, Vj) such that Kj is an i’th smallest key.
 arr: a list of key-value pair tuples
-    e.g. [(K0, V0), (K1, V1), ..., (Ki, Vi), ..., (Kn, Vn)] 
+    e.g. [(K0, V0), (K1, V1), ..., (Ki, Vi), ..., (Kn, Vn)]
     ... in this problem set, the values are irrelevant
-query_list (aka i_arr): a list of integers [0, n-1] 
+query_list(aka i_arr): a list of integers[0, n-1]
 returns: An list of key-value pairs such that for each query qi, the i'th element in the returned list is (Kj, Vj) such that Kj is an i’th smallest key.
-NOTE: This is different from the QuickSelect definition. This function takes in a set of queries and returns a list corresponding to their results. 
+NOTE: This is different from the QuickSelect definition. This function takes in a set of queries and returns a list corresponding to their results.
     ... this is to properly benchmark for the experiments. We only want to run MergeSort once and then use that one result to resolve all queries.
 """
 
@@ -299,7 +307,7 @@ def merge(arr1, arr2):
 """
 A deterministic sorting algorithm
 arr: a list of Key-Value pair tuples
-    e.g. [(K0, V0), (K1, V1), ..., (Ki, Vi), ..., (Kn, Vn)] 
+    e.g. [(K0, V0), (K1, V1), ..., (Ki, Vi), ..., (Kn, Vn)]
 returns: a sorted list, sorted according to keys
 """
 
