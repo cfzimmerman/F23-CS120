@@ -92,10 +92,27 @@ def QuickSelect(arr: KVArr, target_ind: int) -> Tuple[int, int]:
 """
 
 
+def is_between(val: int, bound1: int, bound2: int) -> int:
+    if bound1 <= val and val <= bound2:
+        return True
+    return bound2 <= val and val <= bound1
+
+
+def get_pivot(arr: KVArr) -> int:
+    first = get_random_index(arr)
+    second = get_random_index(arr)
+    third = get_random_index(arr)
+    if is_between(arr[first][0], arr[second][0], arr[third][0]):
+        return first
+    if is_between(arr[second][0], arr[first][0], arr[third][0]):
+        return second
+    return third
+
+
 def QuickSelect(arr: KVArr, target_ind: int) -> Tuple[int, int]:
     if len(arr) == 1:
         return arr[0]
-    pivot_ind = get_random_index(arr)
+    pivot_ind = get_pivot(arr)
     pivot = arr[pivot_ind][0]
     less = []
     equal = []
@@ -143,7 +160,7 @@ def MergeSortSelect(arr: KVArr, query_list: List[int]) -> KVArr:
 
 def experiments():
     # Edit this parameter
-    k = [1, 4, 16, 32, 64]
+    k = [32, 38, 44, 50, 56]
 
     # Feel free to edit these initial parameters
 
