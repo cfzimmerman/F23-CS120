@@ -129,9 +129,6 @@ def bfs_2_coloring(G, precolored_nodes=None):
     precolored = set() if precolored_nodes is None else precolored_nodes
     preset_color = 2
 
-    if len(precolored) == G.N:
-        return G.colors
-
     # use an unvisited set to navigate disconnected components
     # assign every precolored node to have color 2
     unvisited = set()
@@ -140,6 +137,9 @@ def bfs_2_coloring(G, precolored_nodes=None):
             G.colors[node] = preset_color
             continue
         unvisited.add(node)
+
+    if len(precolored) == G.N:
+        return G.colors
 
     # ensures disconnected parts of the graph are visited
     queue = deque()
