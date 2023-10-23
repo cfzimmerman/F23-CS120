@@ -129,20 +129,15 @@ def bfs_2_coloring(G, precolored_nodes=None):
     precolored = set() if precolored_nodes is None else precolored_nodes
     preset_color = 2
 
-    # use an unvisited set to navigate disconnected components
-    # assign every precolored node to have color 2
-    unvisited = set()
-    for node in range(G.N):
-        if node in precolored:
-            G.colors[node] = preset_color
-            continue
-        unvisited.add(node)
+    unvisited = set(range(G.N)).difference(precolored)
+    for node in precolored:
+        G.colors[node] = preset_color
 
     if len(precolored) == G.N:
         return G.colors
 
-    # ensures disconnected parts of the graph are visited
     queue = deque()
+    # ensures disconnected parts of the graph are visited
     while len(unvisited) > 0:
         queue.clear()
         queue.appendleft(unvisited.pop())
@@ -157,13 +152,12 @@ def bfs_2_coloring(G, precolored_nodes=None):
                     if neighbor in unvisited:
                         queue.appendleft(neighbor)
                         unvisited.remove(neighbor)
+                        continue
+                    if G.colors[neighbor] == G.colors[nxt]:
+                        G.reset_colors()
+                        return None
 
             curr_color = (curr_color + 1) % 2
-
-    # reset if no valid coloring is found
-    if not G.is_graph_coloring_valid():
-        G.reset_colors()
-        return None
 
     return G.colors
 
@@ -178,9 +172,8 @@ def bfs_2_coloring(G, precolored_nodes=None):
 
 def is_independent_set(G: Graph, subset: Set[int]):
     for node in subset:
-        for neighbor in G.edges[node]:
-            if neighbor in subset:
-                return False
+        if len(G.edges[node].intersection(subset)) > 0:
+            return False
     return True
 
 
@@ -210,13 +203,14 @@ def is_independent_set(G: Graph, subset: Set[int]):
 
 
 def iset_bfs_3_coloring(G: Graph):
-    for comb in combinations(range(G.N), G.N // 3):
-        comb_as_set = set(comb)
-        if not is_independent_set(G, comb_as_set):
-            continue
-        three_coloring = bfs_2_coloring(G, comb_as_set)
-        if three_coloring is not None:
-            return three_coloring
+    for comb_len in range(0, G.N // 3 + 1):
+        for comb in combinations(range(G.N), comb_len):
+            comb_as_set = set(comb)
+            if not is_independent_set(G, comb_as_set):
+                continue
+            three_coloring = bfs_2_coloring(G, comb_as_set)
+            if three_coloring is not None:
+                return three_coloring
 
     G.reset_colors()
     return None
