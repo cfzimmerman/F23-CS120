@@ -1,6 +1,8 @@
 from itertools import product, combinations
+from time import time
 from collections import deque
 from typing import Set
+from ps5_helpers import generate_random_graph
 
 """
 Before you start: Read the README and the Graph implementation below.
@@ -218,6 +220,27 @@ def iset_bfs_3_coloring(G: Graph):
 
 # Feel free to add miscellaneous tests below!
 if __name__ == "__main__":
-    G0 = Graph(2).add_edge(0, 1)
-    print(bfs_2_coloring(G0))
-    print(iset_bfs_3_coloring(G0))
+    num_nodes = 40
+    prob_edge = 0.075
+
+    total_exhaustive = 0
+    total_iset = 0
+
+    num_trials = 5
+
+    for ct in range(num_trials):
+        print(f"trial {ct}")
+        G = generate_random_graph(Graph, num_nodes, prob_edge)
+
+        start_exhaustive = time()
+        exhaustive_search_coloring(G)
+        diff = time() - start_exhaustive
+        total_exhaustive += diff
+
+        start_iset = time()
+        iset_bfs_3_coloring(G)
+        diff = time() - start_iset
+        total_iset += diff
+
+    print(f"exhaustive: {total_exhaustive / num_trials}")
+    print(f"iset: {total_iset / num_trials}")

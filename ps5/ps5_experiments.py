@@ -1,7 +1,19 @@
 import numpy as np
 import random
-from ps5_helpers import timeout, color, generate_line_of_ring_subgraphs, generate_random_linked_cluster, COLORS
-from ps5_solution import Graph, exhaustive_search_coloring, bfs_2_coloring, iset_bfs_3_coloring
+from ps5_helpers import (
+    timeout,
+    color,
+    generate_line_of_ring_subgraphs,
+    generate_random_linked_cluster,
+    COLORS,
+)
+from ps5 import (
+    Graph,
+    exhaustive_search_coloring,
+    bfs_2_coloring,
+    iset_bfs_3_coloring,
+)
+
 random.seed(120)
 
 ##################################
@@ -10,7 +22,7 @@ random.seed(120)
 #                                #
 ##################################
 
-'''
+"""
     Part D: Run some tests to figure out the relative performance of the 3-coloring algorithms!
     We're comparing exhaustive search and ISET + BFS.
 
@@ -32,10 +44,11 @@ random.seed(120)
 
     When you run the test file, you can see the performance of every combination of parameters
     and whether each algorithm timed out. Use the information from the printouts to answer question 1(d).
-'''
+"""
 
 # The timeout length in seconds
 TIMEOUT_LENGTH = 10
+
 
 def benchmark():
     # You may experiment with these parameters if you wish!
@@ -45,19 +58,27 @@ def benchmark():
     cluster_graph_cluster_size_parameter_range = (2, 26, 8)
     cluster_graph_cluster_quantity_parameter_range = (2, 5, 1)
 
-    algs = [("Exhaustive Coloring", lambda g: exhaustive_search_coloring(g)),
-            ("ISET BFS Coloring", lambda g: iset_bfs_3_coloring(g))]
+    algs = [
+        ("Exhaustive Coloring", lambda g: exhaustive_search_coloring(g)),
+        ("ISET BFS Coloring", lambda g: iset_bfs_3_coloring(g)),
+    ]
 
     print("Line of Rings")
     print()
-    for r in [3,4,5]:
+    for r in [3, 4, 5]:
         print("Size of ring", r)
-        for rings in range(subgraph_line_parameter_range[0], subgraph_line_parameter_range[1], subgraph_line_parameter_range[2]):
+        for rings in range(
+            subgraph_line_parameter_range[0],
+            subgraph_line_parameter_range[1],
+            subgraph_line_parameter_range[2],
+        ):
             print("\tNumber of rings", rings)
             g = generate_line_of_ring_subgraphs(Graph, rings, r)
-            size_text = "\t(n = {}, m = {})".format(g.N, sum([len(v_lst) for v_lst in g.edges]) // 2)
+            size_text = "\t(n = {}, m = {})".format(
+                g.N, sum([len(v_lst) for v_lst in g.edges]) // 2
+            )
             print(size_text)
-            for (alg_name, alg) in algs:
+            for alg_name, alg in algs:
                 timedout = False
                 try:
                     with timeout(seconds=TIMEOUT_LENGTH):
@@ -66,27 +87,44 @@ def benchmark():
                     timedout = True
                 col = color.GREEN if not timedout else color.ORANGE
                 if timedout:
-                    symbol = color.BOLD + col + u'\u23f1' + color.END + color.END
+                    symbol = color.BOLD + col + "\u23f1" + color.END + color.END
                 else:
-                    symbol = color.BOLD + col + (u'\u2713' ) + color.END + color.END
-                print("\t\t" + symbol + "  " + alg_name + ": ", ("Timeout" if timedout else "Finished"))
+                    symbol = color.BOLD + col + ("\u2713") + color.END + color.END
+                print(
+                    "\t\t" + symbol + "  " + alg_name + ": ",
+                    ("Timeout" if timedout else "Finished"),
+                )
 
     print()
     print()
     print("Randomized Cluster Connections (Semi Independent Sets)")
     print()
-    for p in np.arange(cluster_graph_p_parameter_range[0], cluster_graph_p_parameter_range[1], cluster_graph_p_parameter_range[2]):
+    for p in np.arange(
+        cluster_graph_p_parameter_range[0],
+        cluster_graph_p_parameter_range[1],
+        cluster_graph_p_parameter_range[2],
+    ):
         # print()
         print("Probability of keeping edge", p)
-        for q in range(cluster_graph_cluster_quantity_parameter_range[0], cluster_graph_cluster_quantity_parameter_range[1], cluster_graph_cluster_quantity_parameter_range[2]):
+        for q in range(
+            cluster_graph_cluster_quantity_parameter_range[0],
+            cluster_graph_cluster_quantity_parameter_range[1],
+            cluster_graph_cluster_quantity_parameter_range[2],
+        ):
             print("\tNumber of clusters", q)
-            for s in range(cluster_graph_cluster_size_parameter_range[0], cluster_graph_cluster_size_parameter_range[1], cluster_graph_cluster_size_parameter_range[2]):
+            for s in range(
+                cluster_graph_cluster_size_parameter_range[0],
+                cluster_graph_cluster_size_parameter_range[1],
+                cluster_graph_cluster_size_parameter_range[2],
+            ):
                 # print()
                 print("\t\tSize of cluster", s)
                 g = generate_random_linked_cluster(Graph, s, q, p)
-                size_text = "\t\t(n = {}, m = {})".format(g.N, sum([len(v_lst) for v_lst in g.edges]) // 2)
+                size_text = "\t\t(n = {}, m = {})".format(
+                    g.N, sum([len(v_lst) for v_lst in g.edges]) // 2
+                )
                 print(size_text)
-                for (alg_name, alg) in algs:
+                for alg_name, alg in algs:
                     timedout = False
                     try:
                         with timeout(seconds=TIMEOUT_LENGTH):
@@ -95,13 +133,15 @@ def benchmark():
                         timedout = True
                     col = color.GREEN if not timedout else color.ORANGE
                     if timedout:
-                        symbol = color.BOLD + col + u'\u23f1' + color.END + color.END
+                        symbol = color.BOLD + col + "\u23f1" + color.END + color.END
                     else:
-                        symbol = color.BOLD + col + (u'\u2713' ) + color.END + color.END
-                    print("\t\t\t" + symbol + "  " + alg_name + ": ", ("Timeout" if timedout else "Finished"))
+                        symbol = color.BOLD + col + ("\u2713") + color.END + color.END
+                    print(
+                        "\t\t\t" + symbol + "  " + alg_name + ": ",
+                        ("Timeout" if timedout else "Finished"),
+                    )
 
-    
+
 # random graph testing
 if __name__ == "__main__":
     benchmark()
-    
