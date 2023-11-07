@@ -1,7 +1,0 @@
-**Lemma 3.1**
-
-- Given algorithms Pi and Gamma such that Pi reduces to Gamma:
-  - If there exists an algorithm Gamma, tere exists and algorithm solving Pi
-  - If there does not exist an algorithm solving Pi, there does not exist an algorithm solving Gamma
-  - If an algorithm solves gamma in time g(n) and Pi reduces to Gamma, there exists an algorithm solving Pi with runtime O(T(n) + g(f(n)))
-  - Kind of the contrapositive of above
