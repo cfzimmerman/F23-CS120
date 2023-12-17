@@ -1,20 +1,25 @@
 \documentclass[11pt]{article}
 \usepackage{classTools}
 \usepackage[normalem]{ulem}
+\usepackage{listings}
 \sloppy
+
+\lstset{
+    xleftmargin=-5em,
+}
 
 \begin{document}
 
 % To include a problems set header, use the psHeader command
 \psHeader{9}{FRI. Dec. 6, 2023 (11:59pm)}
 
-\textbf{Your name: }
+\textbf{Your name: Cory Zimmerman}
 
-\textbf{Collaborators: }
+\textbf{Collaborators: None}
 
-\textbf{No. of late days used on previous psets: }
+\textbf{No. of late days used on previous psets: 0}
 
-\textbf{No. of late days used after including this pset: } \hfill (Limit 2 late days for problem set 9.)
+\textbf{No. of late days used after including this pset: 0} \hfill (Limit 2 late days for problem set 9.)
 
 \vspace{1em}
 
@@ -34,6 +39,21 @@ Throughout this problem set, you may use some pseudocode in describing RAM and W
     \end{eqnarray*}
     Prove that $\Pi$ is in $\Psearch$ and that $\Pi$ is not in $\NPsearch$.
 
+    \begin{quote}
+        \color{purple}
+        \textit{Prove $\Pi$ is in $\Psearch$}: \\
+        To be in $\Psearch$, the problem $\Pi$ must be solvable in $O(n^c)$ time where $c$ is a constant. Consider this algorithm solving the problem: Given any input program $P$, return $0$. \\
+
+        Any input program $P$ either halts or doesn't halt. If $P$ does halt, the problem allows a return value of $0$. If $P$ doesn't halt, the problem requires a return value of $0$. Thus, $0$ is always a correct output. Because this algorithm returns valid output for every possible input, this solution must be correct. Returning $0$ is a constant time operation, so this algorithm runs in time $O(n^c)$. \\
+
+        Because the algorithm above solves $P$ in polynomial time, it must be the case that $P$ is in $\Psearch$. \\
+
+        \textit{Prove $\Pi$ is not in $\NPsearch$}: \\
+        To be in $\NPsearch$, there must exist an algorithm to solve $\Pi$ such that all solutions are of polynomial length and solutions are verifiable in polynomial time. Because the problem already has a constant-size solution set, I'll prove that it can't be verified: \\
+
+        Assume for purposes of contradiction that $\Pi$ is in $\NPsearch$. If this is the case, there must exist some verifier algorithm $v$ that runs in polynomial time. Say we run the algorithm solving $\Pi$ on some program $P$ and get output $1$. Now, $v$ must verify if $1$ is a correct output for $\Pi$ on $P$. Because $\Pi$ can only return $1$ if a program halts on $\epsilon$, the verifier $v$ must determine if $P$ halts on $\epsilon$. This computational problem is well defined, and we proved in class that it is unsolveable. This implies that the verifier $v$ is capable of solving an unsolveable problem, which is a contradiction. Because of this contradiction, it must be the case that $\Pi$ actually is not in $\NPsearch$. \\
+    \end{quote}
+
   \item (Undecidability of arithmetic overflows) An {\em arithmetic overflow} in the execution of a Word-RAM program is when the result of an arithmetic operation (addition or multiplication) results in a value larger than $2^w$, where $w$ is the current word size, so the result has to be taken modulo $2^w$. 
 
   
@@ -41,6 +61,52 @@ Throughout this problem set, you may use some pseudocode in describing RAM and W
 
   \begin{enumerate}
       \item Give an algorithm that converts any RAM program $P$ into an equivalent Word-RAM program $P'$ that never has arithmetic overflow.  That is, for all inputs (arrays of natural numbers) $x$, $P'$ halts on $x$ iff $P$ halts on $x$, and if they do halt, then $P'(x)=P(x)$, and whenever $P'$ carries out an operation $\var_i = \var_j\ \op\ \var_k$, the result is always smaller than $2^w$, where $w$ is the current word size.  Do not worry about the efficiency of your simulation (in contrast to Theorem 7.1.1 of Lecture 7, which does a fairly involved simulation in order to obtain the runtime as described; something much simpler suffices here).
+
+      \begin{quote}
+          \color{purple}
+          First, assert that certain higher-level constructs like $for$ and $while$ loops can be produced using GOTOs and temp variables in Word RAM. Throughout the algorithm, I'll assume for simplicity that such abstractions do not need to be explicitly expanded or proven. \\
+
+          In this algorithm, begin by copying all lines of the RAM program P into P'. Then, add MALLOC loops before memory reads and writes to ensure that referenced addresses in memory are always valid. With this established, consider the following adaptation of RAM arithmetic to prevent overflow:  \\
+\newpage
+
+           Begin with a macro I'll call \textsf{safeMult}. Defining a multiplication operation $z = x \cdot y$, \textsf{safeMult} expands to the following: 
+           \begin{lstlisting}
+               z = 0;
+               for 0 to y - 1 {
+                   z = z + x;
+               }
+           \end{lstlisting}
+            By this definition, \textsf{safeMult} adds $x$ to $z$ for $y$ times, which simulates multiplication using addition. \\
+
+          Consider a second macro called \textsf{safeSum}. Given an arithmetic sum $z = x + y$, \textsf{safeSum} expands to the following: 
+          \begin{lstlisting}
+            z = x; 
+            for 0 to y - 1 {
+                while S - 1 <= z {
+                    MALLOC;
+                }
+                z = z + 1;
+            }
+          \end{lstlisting}
+            By this definition, \textsf{safeSum} adds $1$ to $x$ for $y$ times, which simulates addition using single-digit operations. \\
+            
+           This construction of \textsf{safeSum} guarantees that $S$, the global variable tracking memory size, is always large-enough to accomodate $z$. This is simple but wasteful because we only need the word size to accomodate $z$, not necessarily that much memory. However, because MALLOC increments $w$ when $S$ exceeds $2^w$, this guarantees the word size is always large-enough without requiring us to separately track $S$, $w$, and $2^w$. \\ 
+
+        Now, make the following operations on the program $P'$, which has already been modified so that memory accesses are in-bounds: (1) replace every instance of multiplication with \textsf{safeMult}, and (2) replace every instance of addition with \textsf{safeSum}. The order is essential, as the addition operations in \textsf{safeMult} must be expanded into instances of \textsf{safeSum}. \\
+
+        Before exiting the "compilation", update all GOTO line numbers that were disrupted by memory operations and macro expansions. Specific values will be dependent on the program and can be calculated by line counts of the specific substitution rules. \\
+
+        Consider why this Word-RAM simulation of RAM is correct. By Theorem 7.1 in the Lecture Notes, assert that the initial memory operations enable $P'$ to correctly model the memory access patterns from $P$. \\
+        
+        For preventing arithmetic overflow, begin with \textsf{safeSum}. By definition of the word RAM model, the values of $x$ and $y$ are guaranteed to fit in memory. By iteratively adding one to the sum variable $z$ beginning at $x$, MALLOC is performed as soon as the maximum allocated memory address limits the next value of $z$. Because the word size is always incremented to accomodate the maximum allocated memory address, this transitively implies that the word size always accomodates the next value of $z$. \\ 
+        
+        Because multiplication is built on the same principle and expands in part to \textsf{safeSum} itself, \textsf{safeMult} must also guard against arithmetic overflow. \\
+
+        Because neither RAM nor Word RAM natively supports negative numbers, there is no concern about translating those. Since the result of unsigned integer subtraction and division is never greater than the inputs, neither of those operations are at risk of generating overflow. \\
+        
+        Thus, this transformation of $P$ into $P'$ must correctly simulate a RAM program in Word RAM without any integer overflow. \\
+          
+      \end{quote}
 
       \label{part:simulate}
 
@@ -50,6 +116,35 @@ Throughout this problem set, you may use some pseudocode in describing RAM and W
     {A Word-RAM program $P$}
     {$\yes$ if $P$ has an arithmetic overflow when run on input $\eps$, $\no$ otherwise}
   \end{enumerate}
+
+  \begin{quote}
+      \color{purple}
+      I'll prove that ArithmeticOverflow is undecidable by reducing from HaltOnEmpty to ArithmeticOverflow. Consider the following pseudocode. (Note that I'm assuming the word size is available and a suitable abstraction for exponentiation in Word-RAM can be devised): \\
+      \begin{lstlisting}
+          HaltOnEmpty(RAM program P) { 
+              Word-RAM program P' = withoutOverflow(P);
+              
+              Qp() {
+                P'();
+                M[0] = 2^w + 2^w; // or anything else that overflows
+              }
+              
+              return ArithmeticOverflow(Qp);
+          }
+      \end{lstlisting}
+
+      The first line constructs a Word-RAM program $P'$ using a function withoutOverflow. Assume withoutOverflow implements the algorithm from $2a$ in which a RAM program is translated into an equivalent Word-RAM program without any arithmetic overflow. The output program is $P'$. \\
+
+      Skipping $Qp$ for now, at the bottom, I call ArithmeticOverflow on $Qp$ and return it as the result from HaltOnEmpty. Thus, for my reduction to be correct, any $Qp$ that overflows must halt, and any $Qp$ that does not overflow must not halt. \\
+      
+      Consider $Qp$: If $P'()$ halts, the line below is executed. That line causes overflow. That overflow causes ArithmeticOverflow to return true, which causes HaltOnEmpty to return true. That means if $P'$ halts on empty, then ArithmeticOverflow and HaltOnEmpty return true, which is correct. \\
+      
+      If $P'$ does not halt on empty, then the line below $P'()$ is never executed. If that line is never executed, then $Qp$ never overflows. This can be guaranteed because $P'$ is constructed such that it never overflows and if $P'$ runs forever in $Qp$ then there can never be integer overflow in $Qp$. If $Qp$ never overflows, then ArithmeticOverflow returns false, and HaltOnEmpty subsequently returns false. \\
+      
+      Because these two cases for the halting behavior of $P$ cover all possible input programs and the output is correct for both cases, it must be true that my reduction returns a correct output for every input, making it correct. \\
+
+     Because there exists a correct reduction from HaltOnEmpty to ArithmeticOverflow and HaltOnEmpty is unsolveable, it must be the case that ArithmeticOverflow is unsolveable. \\
+  \end{quote}
 
     \item (optional:\footnote{This problem is meant to be done based on your enjoyment/interest and only if you have time. It won't make a difference between N, L, R-, and R grades, and course staff will deprioritize questions about this problem at office hours and on Ed.}  Memory-Free RAM Programs) 
 

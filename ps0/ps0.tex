@@ -1,90 +1,20 @@
 \documentclass[11pt]{article}
 \usepackage{Fall23/classTools}
+\usepackage{xcolor}
 \usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{minted}
 \def\draft{1}
 
 \begin{document}
 \psHeader{0}{Wed 2023-09-13 (11:59PM)}
-
-The purpose of this problem set is to reactivate your skills in proofs and programming from CS20 and CS32/CS50. For those of you who haven't taken one or both those courses, the problem set can also help you assess whether you have acquired sufficient skills to enter CS120 in other ways and can fill in any missing gaps through self-study. Even for students with all of the recommended background, this problem set may still require a significant amount of thought and effort, so do not be discouraged if that is the case and do take advantage of the staff support in section and office hours. 
-
-For those of you who are wondering whether you should wait and take CS20 before taking CS120, we encourage you to also complete  \href{https://drive.google.com/file/d/1QIJR6sb9hfkK67PhpQaK9KQBzYwzXvsW/view}{the CS20 Placement Self-Assessment}.  Some problems there that are of particular relevance to CS120 and are complementary to what is covered below are Problems 2 (counting), 4 (comparing growth rates), 9 (quantificational logic), and 12 (graph theory). 
-
-Written answers must be submitted in pdf format on Gradescope. Although \LaTeX{} is not required, it is strongly encouraged. You may handwrite solutions so long as they are fully legible. The \texttt{ps0} directory, which contains your code for problems 1a and 1c, must be submitted separately to an autograder on Gradescope. Be sure to pull the starter code from the \href{https://github.com/Harvard-CS-120/cs120}{cs120 GitHub repository}.
 
  \newcommand{\children}{\mathit{children}}
  \newcommand{\parent}{\mathit{parent}}
  
 \begin{enumerate}
 \item (Binary Trees) 
- In the \href{https://github.com/Harvard-CS-120/cs120}{cs120 GitHub repository}, we have given you a Python implementation of a binary tree data structure, as well as a collection of test trees built using this data structure.  We specify a binary tree by giving a pointer to its {\em root}, which is a special {\em vertex} (a.k.a. {\em node}), and giving every vertex pointers to its {\em children} vertices and its {\em parent} vertex as well as an identifying {\em key}: 
- 
- \begin{verbatim}
-    class BinaryTree:
-        def __init__(self, root):
-            self.root: BTvertex = root
- 
-    class BTvertex:
-        def __init__(self, key):
-            self.parent: BTvertex = None
-            self.left: BTvertex = None
-            self.right: BTvertex = None
-            self.key: int = key
-            self.size: int = None
- \end{verbatim}
-
-
- In CS50, the concept of a Python \texttt{class} was not covered. Here, with \texttt{BinaryTree} and \texttt{BTvertex}, we are using them in the same way as a \texttt{struct} in C. An object \btv\ of the \texttt{BTvertex} class contains five attributes, which we list with the type of the object we expect to be named by each attribute (using the Python type annotation syntax). These attributes can be accessed as \texttt{v.parent}, \texttt{v.left}, \texttt{v.right}, \texttt{v.key}, and \texttt{v.size}. 
- For example, \texttt{v.left.key} is the key associated with \btv's left child. An object of the \texttt{BinaryTree} class contains only one attribute, which is the \texttt{BTvertex} object that is the root of our binary tree. You can create a \texttt{BinaryTree} object as follows:
- 
-\begin{verbatim}
-root = BTvertex(120)
-tree = BinaryTree(root)
-tree.root.left = BTvertex(121)
-tree.root.right = BTvertex(124)
-\end{verbatim}
-
-You can then print attributes of the newly created \texttt{BinaryTree} object:
-\begin{verbatim}
-print(tree.root.key)
->> 120
-print(tree.root.left.key)
->> 121
-\end{verbatim}
- 
-
- Classes are more general than structs because they can also have private attributes and methods that operate on the attributes, allowing for object-oriented programming. However, you won't need that generality in this problem set.
-
- Here is an instance \treeT\ of \texttt{BinaryTree}:
- 
- \includegraphics[scale=.175]{Fall23/Problem Sets and Exams/ps0/ps0_assets/p0_q1_BT_before.png}
-
- A \texttt{BinaryTree} \treeT\  contains only a pointer to its root vertex, \texttt{T.root}, which is required to satisfy \texttt{T.root.parent==None}. In the above example, 
- the root is the vertex with key 1 (i.e. \texttt{T.root.key==1}).
- A binary tree vertex \btv\ can have zero, one, or two children, determined by which of \texttt{v.left} and  \texttt{v.right} are equal to \texttt{None}.    In the above example, the vertex \btv\ with key 3 has 
- \texttt{v.left==None} but \texttt{v.right} is the vertex with key 6.
- A {\em leaf} is a vertex with zero children, i.e. \texttt{v.left==v.right==None}. 
- 
- A vertex \btw\ is {\em descendent} of a vertex \texttt{w} if there is a sequence of vertices $\btv_0,\btv_1,\ldots,\btv_k$, $k\in \mathbb{N}$ such that $\btv_0=\btv$, $\btv_k=\btw$, and 
- $\btv_i \in \{\btv_{i-1}.\texttt{left},\btv_{i-1}.\texttt{right}\}$ for $i=1,\ldots,k$.\footnote{$\mathbb{N}$ denotes the natural numbers $\{0,1,2,3,\ldots\}$.  Since we are computer scientists, we start counting at 0.}
- In the above example, the vertex with key 5 is a descendent of the root (with a path of length 2), but is not a descendent of the vertex with key 3.
- The sequence $\btv_0,\btv_1,\ldots,\btv_k$ is called a {\em path} from \btv\ to \btw\ and $k$ is the {\em distance} from \btv\ to \btw. Taking $k=0$, we see that \btv\ is a descendent of itself.
-
- The {\em vertex set} of a binary tree \treeT\ consists of all of the descendents of \texttt{T.root}. The {\em size} of \treeT\ is its number of vertices. The {\em height} of \treeT\ is the largest distance from the root to a leaf.  The above example has size 8 and height 3.
- 
- Given any vertex \btv\ in a tree, the {\em subtree} rooted at \btv\ consists of all of \btv's descendents.  Note that we can remove a subtree and turn it into a new tree \texttt{S} by setting
- \texttt{S.root=v} and \texttt{v.parent=None}.
-
- For now, the \texttt{key} attribute serves to distinguish vertices from each other in our tests and help illustrate what the algorithms are doing.  The \texttt{BTvertex}\ class
- also has a \texttt{size} attribute, which is initialized to \texttt{None} in all of the test instances; it will be filled in by the program you write in Part~\ref{part:calculatesizes}.
-
- An instance \treeT\ \texttt{BinaryTree} is {\em valid} if it satisfies the following constraints: \begin{itemize}
-     \item \texttt{T.root.parent==None}
-     \item \treeT\ has finitely many vertices.
-     \item No two vertices \btv, \btw\ of \treeT\ share a child, i.e. 
-     $\{\texttt{v.left},\texttt{v.right}\} \cap \{\texttt{w.left},\texttt{w.right}\} = \emptyset$. 
- \end{itemize}
- All of the test instances we provide are valid, and furthermore have the property that all of the vertices have distinct keys (which is something we often want, but not always).
 
  \begin{enumerate}
  \item \label{part:calculatesizes} (recursive programming)
@@ -93,9 +23,25 @@ print(tree.root.left.key)
 For example, if \treeT\  is the  tree shown above, 
 then calling \texttt{calculate\_sizes(T.root)} should modify  \treeT\ to be the following size-augmented tree:
 
- \includegraphics[scale=.175]{Fall23/Problem Sets and Exams/ps0/ps0_assets/p0_q1_BT_after.png}
+ \includegraphics[scale=.175]{Fall23/p0_q1_BT_after.png}
 
  Your program should run in time $O(n)$ when given the root of a tree with $n$ vertices. In a sentence or two, informally justify why your program has such a runtime. 
+
+\textbf{Solution}:
+\begin{minted}{python}
+    def calculate_sizes(v: Optional[BTvertex]) -> int:
+        if v is None:
+            return 0
+        left = calculate_sizes(v.left)
+        right = calculate_sizes(v.right)
+        v.size = left + right + 1
+        return v.size
+\end{minted}
+
+\begin{quote}
+    \color{purple}
+    The function dives to the bottom of the tree and climbs upward. At each level of the tree, a parent receives the sum of the left and right children and returns their sum. For a tree with n nodes, it takes roughly n steps to dive to the bottom of the tree and n steps to climb back up, which results in $O(n)$ time complexity. 
+\end{quote}
  
  \item (proof warmup) \label{part:warmup}
  Removing a vertex \btv\ from a tree \treeT\ yields up to three disjoint trees: the subtree rooted at
@@ -105,22 +51,64 @@ then calling \texttt{calculate\_sizes(T.root)} should modify  \treeT\ to be the 
 
  Before:
  
- \includegraphics[scale=.175]{Fall23/Problem Sets and Exams/ps0/ps0_assets/p0_q1b_before.png}
+ \includegraphics[scale=.175]{Fall23/p0_q1b_before.png}
  
  
  After:
  
-  \includegraphics[scale=.225]{Fall23/Problem Sets and Exams/ps0/ps0_assets/p0_q1b_after.png}
+  \includegraphics[scale=.225]{Fall23/p0_q1b_after.png}
 
   Suppose that for a vertex \btv, the largest subtree created by removing \btv\ contains a neighbor (i.e. child or parent) \btv$^*$\ of \btv\ and a total of $\phi(\btv)$ vertices (including \btv$^*$).
   If we remove \btv$^*$ and not \btv, we create at most two subtrees which don't contain \btv: prove that these subtrees each contain fewer than $\phi(\btv)$ vertices.
+
+  \textbf{Solution}:
+  \begin{quote}
+    \color{purple}
+    \textit{Direct proof}: Let $T$, $v$, $v$*, and $\phi$ be as defined above. \newline 
+    If $v$* in the largest subtree not containing $v$ was the parent of $v$ before its removal, removing $v$* from $T$ instead produces one subtree not containing $v$. That subtree is either empty or contains a non-$v$ neighbor of $v$*. When $v$* is removed, the subtree of size $\phi(v)$ loses a leaf or root and has at most $\phi(v) - 1$ total vertices. \newline 
+    If $v$* in in the largest subtree not containing $v$ was a child of $v$ before its removal, removing $v$* from $T$ instead produces two subtrees not containing $v$. These subtrees are either empty or rooted by children of $v$*. Without $v$* as a parent, the greatest of these child trees has at-most $\phi(v) - 1$ total vertices. \newline
+    Because $\phi(v*)$ not containing $v$ is at-most $\phi(v) - 1$, all subtrees not-containing $v$ produced by removing $v$* from $T$ must have fewer than $\phi(v)$ vertices. 
+\end{quote}
 
  \item (proofs by contradiction) \label{part:contradiction}
   Prove that in every tree \treeT\ of size $n$, there exists a vertex \btv\ such that removing \btv\ from \treeT\ results in disjoint trees that all have size at most $n/2$.  \\
 
   You may prove this however you like, but a recommended approach is to extend Part~\ref{part:warmup} and show that if the largest subtree created by removing a vertex \btv\ contains a neighbor \btv$^*$ of \btv\ and contains $\phi(\btv) > n/2$ vertices, then if we remove \btv$^*$ and not \btv, the subtree \emph{containing} \btv\ contains at most $n/2$ vertices. Then choose \btv\ to be the vertex for which $\phi(\btv)$, the size of the largest tree created by removing \btv, is smallest.
 
+  \textbf{Solution}:
+  \begin{quote}
+    \color{purple}
+    \textit{Proof by contradiction}: Assume for purposes of contradiction there exists some binary tree $T$ of size $n \in \mathbb{N}$ such that every vertex $v_k$, if removed, is guaranteed to produce at least one subtree of size $\phi(v_k) > \frac{n}{2}$. \newline
+    Select some arbitrary vertex $v_0$ in $T$. If removed, at most three subtrees are produced. Let $v_1$ be a neighbor of $v_0$ and a member of the largest of those subtrees. By the assumed invariant of $T$, $\phi(v_0) > \frac{n}{2}$. \newline 
+    Consider removing $v_1$ instead. By the proof above,  $\phi(v_0) \geq \phi(v_1) + 1$. Assuming the maximum value of $\phi(v_1)$, the inequality for $\phi(v_0)$ implies $\phi(v_1) + 1 > \frac{n}{2}$. Because $\phi(v_1)$ may be equal to $\frac{n}{2}$ and still satisfy this inequality, the invariant of $T$ is not maintained by $\phi(v_1)$. \newline
+    If $v_0$ were removed, the maximum size of its lesser subtree would have been $n - \phi(v_0)$. Because $\phi(v_0) > \frac{n}{2}$, the maximum size of the lesser subtree would have been $\frac{n}{2} - 1$. If $v_1$ is removed instead, the size of the subtree now containing $v_0$ is at most $\frac{n}{2} - 1 + 1 = \frac{n}{2}$. This too fails to maintain the invariant of $T$. \newline 
+    Because removing some $v_1$ on $T$ may produce a state that fails to preserve the claim about $T$, we can assume by contradiction that the claim was invalid and every tree of size $n$ has a vertex $v$ such that removing $v$ results in disjoint trees that all have size at most $\frac{n}{2}$.
+\end{quote}
+
  \item (from proofs to algorithms)  Turn your proof from Part~\ref{part:contradiction} into a Python program that given a root vertex \texttt{r} of a {\em size-augmented} tree \treeT\ with $n$ vertices finds a vertex \btv\ with $\phi(\btv)\leq n/2$. Your program should run in time $O(h)$ on all size-augmented trees of height $h$; again informally justify why your program has such a runtime. (Hint: try to repeatedly reduce the potential function by moving to children. Why don't we need to try moving to parents as in the previous proof?)
+\newpage
+\textbf{Solution}:
+\begin{minted}{python}
+def find_vertex(r: Optional[BTvertex]) -> Optional[BTvertex]:
+    if r is None:
+        return r
+    half = r.size // 2
+    while r:
+        if r.left and r.left.size > half:
+            r = r.left
+            continue
+        if r.right and r.right.size > half:
+            r = r.right
+            continue
+        return r
+    raise Exception("failed to find a solution")
+\end{minted}
+
+\begin{quote}
+    \color{purple}
+    If any subtree of the current vertex has a child with size exceeding $\frac{n}{2}$, the breakpoint must be somewhere in that subtree. By descending the tree in such a way, the first vertex at which neither child exceeds $\frac{n}{2}$ is the target vertex. Because the function only ever moves downward and only ever visits a single node at any height in the tree, the runtime complexity is in terms of the height of the tree, $O(h)$.
+\end{quote}
+ 
  \end{enumerate}
  
  \newcommand{\incomp}{\mathit{incomp}}
@@ -133,14 +121,66 @@ then calling \texttt{calculate\_sizes(T.root)} should modify  \treeT\ to be the 
  $$ f(n) > (n-1)\cdot f(n-2).$$
  Hint: let $d$ be one of the donors, and consider all possible patients $p$ with whom $d$ could be matched.  Then consider the case where $\incomp(p)$ is matched with $\incomp(d)$.
 
+\begin{quote}
+    \color{purple}
+    In a sample of $n \geq 3$ patients, donors, and incompatibilities, let patient $p_k$ be incompatible with donor $d_k$ for $k \in \mathbb{N}, 0 \leq k < n$. \newline
+    Arbitrarily select any patient. For example, $p_0$. There are initially $n - 1$ possible matches between $p_0$ and a donor. This is because $p_0$ can match with every donor except $d_0$. \newline 
+    Say $p_0$ arbitrarily matches with $d_1$. After this match, one remaining patient and one remaining donor become able to match with anyone. In this example, $d_0$ is now compatible with every remaining patient, and $p_1$ is now compatible with every remaining donor. There are $n - 1$ patients and donors but fewer than $n - 1$ incompatibilities. Patient $p_1$ could feasibly match with $n - 1$ donors again instead of $n - 2$. This produces some nonzero surplus of matches over $f(n - 1)$, which we will call $x_n$. So, $f(n) = (n - 1) \cdot (f(n - 1) + x_n)$. \newline
+    Place this in the given inequality and simplify: \newline
+    \begin{align*}
+        && (n - 1) \cdot (f(n - 1) + x_n) > (n - 1) \cdot f(n - 2) && \text{Substitute $f(n)$} && \\
+        && f(n - 1) + x_n > f(n - 2) && \text{Divide common terms} &&  \\
+        && (n - 2) \cdot (f(n - 2) + x_{n - 1}) + x_n > f(n - 2) && \text{Expand $f(n - 1)$} \\
+        && (n - 2) \cdot f(n - 2) + (n - 2) \cdot x_{n - 1} + x_n  > f(n - 2) && \text{Multiply terms} && \\
+        && (n - 2) \cdot x_{n - 1} + x_n > f(n - 2) - (n - 2) \cdot f(n - 2) && \text{Move $f(n - 2)$} && \\
+    \end{align*}
+    Because $n \geq 3$, the right side of the final inequality is at most 0. Because $x_{n - 1}$ is at least $1$, the left side of the inequality is at least 1. So, the inequality is valid.
+\end{quote}
+
  \item
  In fact, show that for all $n\geq 3$, we have
  $$ f(n) = (n-1)\cdot (f(n-1)+f(n-2)).$$
  This will require you to include the remaining case where $\incomp(p)$ is \emph{not} matched with $\incomp(d)$, unlike the previous exercise.
 
+\begin{quote}
+    \color{purple}
+    Extending the variables and reasoning above, recall that $f(n)$ represents the number of possible matches in the presence of $n$ patients, donors, and incompatibilities. After the first match, there's one donor and one patient who can match with any other donor and any other patient. \newline 
+    If we treat these "free agent" members as if they actually had an associated incompatibility, we'd again have equal patients, donors, and incompatibilities among an $n - 1$ sized sample, which we know has $f(n - 1)$ matches. \newline
+    If instead, however, the free donor and patient immediately match with each other, there are now $n - 2$ patients, donors, and incompatibilities, which we know has $f(n - 2)$ matches. \newline
+    Because these two events may happen for any match in the initial sample of $n$, we can conclude that $f(n) = (n - 1) \cdot (f(n - 1) + f(n - 2))$.
+    
+\end{quote}
+
  \item 
  Prove by strong induction that for all $n\geq 2$,
  $$\frac{n!}{3} \leq f(n) \leq \frac{n!}{2}.$$
+ 
+\begin{quote}
+    \color{purple}
+    \textit{Proof by strong induction}:
+    \item \textit{Base case 1}: $n = 2$.
+    \begin{itemize}
+        \item $\frac{2!}{3} = \frac{2}{3}$
+        \item $f(2) = 1$. With two patients, donors, and incompatibilities, each patient can match once with the single donor they are not incompatible with.
+        \item $\frac{2!}{2} = 1$
+        \item Because $\frac{2}{3} \leq 1 \leq 1$, this case holds.
+    \end{itemize}
+    \item \textit{Base case 2}: $n = 3$
+    \begin{itemize}
+        \item $\frac{3!}{3} = 2$
+        \item $f(3) = 2$. $f(1) = 0$ because a single patient and single donor are incompatible. Applying the formula from 2c, $f(3) = 2 \cdot (f(2) + f(1)) = 2 \cdot 1 = 2$. 
+        \item $\frac{3!}{2} = 3$
+        \item Because $2 \leq 2 \leq 3$, this case holds.
+    \end{itemize}
+    \textit{Inductive hypothesis}: Let $k$ be some natural number greater than $2$. Assuming the inequality is valid for $k - 1$ and $k$, prove the inequality holds for $k + 1$: \newline \newline
+    Leveraging the definition of factorial, at $k + 1$, the inequality can be expressed and simplified as below: 
+    \begin{align*}
+        && \frac{k!}{3} \cdot (k + 1) \leq k \cdot (f(k) + f(k - 1)) \leq \frac{k!}{2} \cdot (k + 1) && \text{Apply formulas} && \\
+        && \frac{k! \cdot k}{3} + \frac{k!}{3} \leq k \cdot f(k) + k \cdot f(k - 1) \leq \frac{k! \cdot k}{2} + \frac{k!}{2} && \text{Distribute} && \\ 
+        && \frac{k!}{3} + \frac{(k - 1)!}{3} \leq f(k) + f(k - 1) \leq \frac{k!}{2} + \frac{(k - 1)!}{2} && \text{Divide by $k$} && \\
+    \end{align*}
+    By the inductive hypothesis, we can assert that $\frac{(k - 1)!}{3} \leq f(k - 1) \leq \frac{(k - 1)!}{2}$ is true and $\frac{k!}{3} \leq f(k) \leq \frac{k!}{2}$. The final inequality above is simply the sum of two already-known valid inequalities, so we can assert that the derived inequality is valid. Thus, through strong induction, we know that $\frac{n!}{3} \leq f(n) \leq \frac{n!}{2}$ for all $n \geq 2$.
+\end{quote}
  \end{enumerate}
 
 
